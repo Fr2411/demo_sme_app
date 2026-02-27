@@ -144,10 +144,50 @@ The API now includes versioned REST endpoints with Pydantic contracts:
 - `POST/GET /api/v1/returns`
 - `POST/GET /api/v1/accounting/journal-entries` with debit-credit validation
 - `GET /api/v1/reports/profit-loss`, `GET /api/v1/reports/stock-aging`
-- `POST /api/v1/chat/webhook/inbound`
+- `GET /api/v1/chat/webhook` (Meta verify handshake)
+- `POST /api/v1/chat/webhook` (Meta inbound events + signature validation + AI orchestration + outbound reply)
+- `POST /api/v1/chat/webhook/inbound` (manual/dev inbound simulation)
+- `GET /api/v1/chat/templates` (sample Meta-ready templates)
 - `GET /api/v1/sessions/logs`
 
 Notes:
 - Order edits require `ORDER_EDIT_2FA_CODE` configured in env.
 - Profit/loss report computes from journal lines grouped by account type (`revenue`, `expense`).
 - Inventory is movement-ledger based (in/out/returns/adjustments), not static balances.
+
+### WhatsApp Integration Flow
+
+The backend now supports end-to-end WhatsApp webhook handling:
+
+1. **Webhook verification**
+   - `GET /api/v1/chat/webhook` validates `hub.verify_token` from Meta and returns `hub.challenge`.
+2. **Inbound message processing**
+   - `POST /api/v1/chat/webhook` validates `X-Hub-Signature-256` (when `WHATSAPP_APP_SECRET` is configured).
+   - Extracts inbound text messages from Meta webhook payload (`entry[].changes[].value.messages[]`).
+3. **AI routing**
+   - Each message is routed into `AgentOrchestrator` to collect sales/stock/discount guidance.
+4. **Outbound reply delivery**
+   - Replies are sent through Meta Graph API (`/{phone_number_id}/messages`) when access token credentials are configured.
+   - If credentials are not configured, sending is safely skipped and logged as `skipped`.
+5. **Conversation logging**
+   - Both inbound and outbound messages are persisted to the `conversations` table.
+
+#### Required/Optional Environment Variables (Backend)
+
+Add these to your backend `.env`:
+
+```env
+WHATSAPP_VERIFY_TOKEN=change_me_verify_token
+WHATSAPP_APP_SECRET=your_meta_app_secret
+WHATSAPP_ACCESS_TOKEN=your_whatsapp_access_token
+WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id
+WHATSAPP_API_VERSION=v20.0
+```
+
+#### Sample Approved Template Catalog
+
+`GET /api/v1/chat/templates` returns sample template payloads aligned to Meta template categories:
+
+- `order_update_v1` (`UTILITY`)
+- `cart_reminder_v1` (`MARKETING`)
+- `support_followup_v1` (`UTILITY`)

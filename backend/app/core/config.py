@@ -12,6 +12,11 @@ class Settings(BaseSettings):
     order_edit_2fa_code: str = '123456'
 
     database_url: str = 'postgresql+psycopg://postgres:postgres@localhost:5432/easy_ecom'
+    whatsapp_verify_token: str = 'change_me_verify_token'
+    whatsapp_app_secret: str = ''
+    whatsapp_access_token: str = ''
+    whatsapp_phone_number_id: str = ''
+    whatsapp_api_version: str = 'v20.0'
 
 
 settings = Settings()
