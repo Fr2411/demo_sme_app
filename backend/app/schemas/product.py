@@ -31,3 +31,26 @@ class ProductRead(ProductBase):
 
     class Config:
         from_attributes = True
+
+
+class ProductImageRead(BaseModel):
+    id: int
+    product_id: int
+    file_name: str
+    content_type: str
+    s3_bucket: str
+    s3_key: str
+    s3_url: str
+
+    class Config:
+        from_attributes = True
+
+
+class ProductImageMatchRead(BaseModel):
+    product_id: int
+    sku: str
+    name: str
+    category: str | None
+    image_url: str
+    similarity_score: float
+

@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from sqlalchemy import Numeric, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.db.base_class import Base
 
@@ -17,3 +17,5 @@ class Product(Base):
     unit_cost: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     unit_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
+
+    images = relationship('ProductImage', back_populates='product', cascade='all, delete-orphan')

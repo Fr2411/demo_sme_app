@@ -191,3 +191,53 @@ WHATSAPP_API_VERSION=v20.0
 - `order_update_v1` (`UTILITY`)
 - `cart_reminder_v1` (`MARKETING`)
 - `support_followup_v1` (`UTILITY`)
+
+
+### Image Storage & Recognition (S3 + OpenAI + pgvector)
+
+The backend now supports product-image indexing and screenshot similarity search:
+
+1. `POST /api/v1/products/{product_id}/images`
+   - Accepts multipart image upload.
+   - Uploads binary data to S3.
+   - Generates an embedding vector through OpenAI embeddings API.
+   - Stores metadata + embedding in `product_images`.
+2. `POST /api/v1/products/image-search`
+   - Accepts a customer screenshot (`multipart/form-data`).
+   - Generates screenshot embedding.
+   - Performs cosine-similarity search with pgvector.
+   - Returns top matching products with a similarity score.
+
+#### pgvector setup
+
+- PostgreSQL service already uses `pgvector/pgvector:pg16` image.
+- Run Alembic migration to create extension/table/indexes:
+
+```bash
+cd backend
+alembic upgrade head
+```
+
+Migration includes:
+- `CREATE EXTENSION IF NOT EXISTS vector`
+- `product_images` table with `embedding vector(1536)`
+- ivfflat cosine index for fast nearest-neighbor search
+
+#### New backend environment variables
+
+```env
+OPENAI_API_KEY=...
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+S3_REGION=us-east-1
+S3_ACCESS_KEY_ID=...
+S3_SECRET_ACCESS_KEY=...
+S3_BUCKET_NAME=...
+S3_PRODUCT_IMAGE_PREFIX=product-images
+```
+
+#### New backend dependencies
+
+From `backend/requirements.txt`:
+- `pgvector`
+- `boto3`
+- `openai`

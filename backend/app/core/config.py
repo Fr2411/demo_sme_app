@@ -18,5 +18,14 @@ class Settings(BaseSettings):
     whatsapp_phone_number_id: str = ''
     whatsapp_api_version: str = 'v20.0'
 
+    openai_api_key: str = ''
+    openai_embedding_model: str = 'text-embedding-3-small'
+
+    s3_region: str = 'us-east-1'
+    s3_access_key_id: str = ''
+    s3_secret_access_key: str = ''
+    s3_bucket_name: str = ''
+    s3_product_image_prefix: str = 'product-images'
+
 
 settings = Settings()

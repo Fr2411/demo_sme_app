@@ -4,6 +4,7 @@ from backend.app.models.conversation import Conversation
 from backend.app.models.customer import Customer
 from backend.app.models.order import Order, OrderItem
 from backend.app.models.product import Product
+from backend.app.models.product_image import ProductImage
 from backend.app.models.return_order import ReturnItem, ReturnOrder
 from backend.app.models.session_log import SessionLog
 from backend.app.models.stock_movement import StockMovement
@@ -15,6 +16,7 @@ __all__ = [
     'Role',
     'Permission',
     'Product',
+    'ProductImage',
     'StockMovement',
     'Customer',
     'Order',
