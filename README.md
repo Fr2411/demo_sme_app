@@ -241,3 +241,26 @@ From `backend/requirements.txt`:
 - `pgvector`
 - `boto3`
 - `openai`
+
+### Backend Test Strategy (Pytest + Coverage)
+
+The backend test suite now includes endpoint-level API coverage and an integration test for WhatsApp webhook processing.
+
+#### What is covered
+
+- End-to-end tests for every FastAPI endpoint under `backend/app/api/v1/endpoints/*` plus `/health`.
+- Fixture data for reusable product/customer/account records and order/order-item records.
+- Integration coverage for `POST /api/v1/chat/webhook` including message extraction, orchestrator routing, outbound reply handling, and conversation persistence.
+
+#### Run tests
+
+```bash
+pytest backend/tests -q
+```
+
+#### Run with coverage
+
+```bash
+coverage run -m pytest backend/tests -q
+coverage report -m
+```
