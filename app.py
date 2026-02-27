@@ -60,9 +60,9 @@ else:
     if is_admin:
         all_clients = get_all_clients()
         client_options = all_clients["client_id"].tolist()
-        dashboard_filters = ["All clients", *client_options]
-        selected_dashboard_filter = st.selectbox("Dashboard view", dashboard_filters, index=0, key="admin_dashboard_selector")
-        selected_client = st.selectbox("View client workspace", client_options, key="admin_client_selector") if client_options else None
+        client_filters = ["All clients", *client_options]
+        selected_client_filter = st.selectbox("Client filter", client_filters, index=0, key="admin_client_filter")
+        active_client_scope = "__all__" if selected_client_filter == "All clients" else selected_client_filter
         st.caption(f"Logged in as {st.session_state.get('username')} (superadmin)")
 
         tab_dashboard, tab_add, tab_assets, tab_sales, tab_admin = st.tabs(
@@ -71,28 +71,27 @@ else:
 
         with tab_dashboard:
             if client_options:
-                dashboard_client_id = "__all__" if selected_dashboard_filter == "All clients" else selected_dashboard_filter
-                render_dashboard_tab(dashboard_client_id)
+                render_dashboard_tab(active_client_scope)
             else:
                 st.info("No clients found.")
 
         with tab_add:
-            if selected_client:
-                render_add_product_tab(selected_client)
+            if active_client_scope != "__all__":
+                render_add_product_tab(active_client_scope)
             else:
-                st.info("No clients found.")
+                st.info("Select a specific client in Client filter to add products.")
 
         with tab_assets:
-            if selected_client:
-                render_assets_tab(selected_client)
+            if client_options:
+                render_assets_tab(active_client_scope)
             else:
                 st.info("No clients found.")
 
         with tab_sales:
-            if selected_client:
-                render_sales_tab(selected_client)
+            if active_client_scope != "__all__":
+                render_sales_tab(active_client_scope)
             else:
-                st.info("No clients found.")
+                st.info("Select a specific client in Client filter to record sales.")
 
         with tab_admin:
             render_admin_tab()
