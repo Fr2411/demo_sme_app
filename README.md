@@ -23,6 +23,12 @@ A lightweight Streamlit app for small-business inventory and sales tracking with
 .
 ├── app.py                     # Main Streamlit entry point (routing + session flow)
 ├── config.py                  # Global constants (file paths, app title/icon)
+├── ai_agents/
+│   ├── orchestrator.py         # Multi-agent coordinator + OpenAI function-calling setup
+│   ├── sales_agent.py          # Sales push agent (margin-safe campaign actions)
+│   ├── stock_agent.py          # Stock urgency and replenishment agent
+│   ├── discount_supervisor.py  # Discount approval policy agent
+│   └── prompt_utils.py         # Shared prompt template/rule builders
 ├── services/
 │   ├── auth_service.py        # Authentication logic
 │   ├── common.py              # Shared helpers (name normalization)
@@ -52,6 +58,11 @@ A lightweight Streamlit app for small-business inventory and sales tracking with
    - Inventory quantity and value are reduced automatically.
 5. **Dashboard analytics**
    - KPIs and product-level visualizations are rendered from cleaned data.
+6. **AI agent orchestration (new)**
+   - Structured event payloads (`dict`) are evaluated by specialized agents.
+   - Every agent returns strict JSON-style output (`action`, `text`, optional `metadata`).
+   - Prompt templates consistently enforce sales push, margin, stock urgency, and discount approval rules.
+   - OpenAI function-calling tools are defined with JSON Schema contracts that mirror TypeScript-style interfaces.
 
 ## Critical Logic
 
@@ -77,6 +88,7 @@ From `requirements.txt`:
 - `streamlit`
 - `pandas`
 - `plotly`
+- `openai`
 
 ---
 
