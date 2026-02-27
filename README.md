@@ -121,3 +121,21 @@ A production-oriented backend scaffold now exists under `backend/` with:
 - `backend/app/db/session.py` – SQLAlchemy engine/session.
 - `backend/alembic/*` – migration scaffolding.
 
+
+### Implemented Section D Endpoints
+
+The API now includes versioned REST endpoints with Pydantic contracts:
+
+- `GET/POST/GET{id}/PATCH/DELETE /api/v1/products`
+- `POST /api/v1/inventory/adjustments`, `GET /api/v1/inventory/movements`
+- `POST/GET/PATCH/DELETE /api/v1/orders` with `X-2FA-Code` required for edits
+- `POST/GET /api/v1/returns`
+- `POST/GET /api/v1/accounting/journal-entries` with debit-credit validation
+- `GET /api/v1/reports/profit-loss`, `GET /api/v1/reports/stock-aging`
+- `POST /api/v1/chat/webhook/inbound`
+- `GET /api/v1/sessions/logs`
+
+Notes:
+- Order edits require `ORDER_EDIT_2FA_CODE` configured in env.
+- Profit/loss report computes from journal lines grouped by account type (`revenue`, `expense`).
+- Inventory is movement-ledger based (in/out/returns/adjustments), not static balances.

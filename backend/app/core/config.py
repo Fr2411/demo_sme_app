@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     secret_key: str = 'change_me'
     algorithm: str = 'HS256'
     access_token_expire_minutes: int = 60
+    order_edit_2fa_code: str = '123456'
 
     database_url: str = 'postgresql+psycopg://postgres:postgres@localhost:5432/easy_ecom'
 
