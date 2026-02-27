@@ -13,8 +13,12 @@ def load_products(client_id):
         if col not in df.columns:
             df[col] = 0
 
+    normalized_client_id = str(client_id) if client_id is not None else "__all__"
+    include_all_clients = normalized_client_id == "__all__"
+
     df["client_id"] = df["client_id"].astype(str)
-    df = df[df["client_id"] == str(client_id)].copy()
+    if not include_all_clients:
+        df = df[df["client_id"] == normalized_client_id].copy()
 
     if df.empty:
         return pd.DataFrame(columns=PRODUCT_COLUMNS)
@@ -36,12 +40,13 @@ def load_products(client_id):
         axis=1,
     )
     consolidated["total_cost"] = (consolidated["quantity"] * consolidated["unit_cost"]).round(2)
-    consolidated = consolidated[PRODUCT_COLUMNS].sort_values("product_name").reset_index(drop=True)
+    consolidated = consolidated[PRODUCT_COLUMNS].sort_values(["client_id", "product_name"]).reset_index(drop=True)
 
-    all_df = pd.read_csv(PRODUCTS_FILE)
-    all_df = all_df[all_df["client_id"].astype(str) != str(client_id)]
-    updated = pd.concat([all_df, consolidated], ignore_index=True)
-    updated.to_csv(PRODUCTS_FILE, index=False)
+    if not include_all_clients:
+        all_df = pd.read_csv(PRODUCTS_FILE)
+        all_df = all_df[all_df["client_id"].astype(str) != normalized_client_id]
+        updated = pd.concat([all_df, consolidated], ignore_index=True)
+        updated.to_csv(PRODUCTS_FILE, index=False)
     return consolidated
 
 

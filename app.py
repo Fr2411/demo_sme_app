@@ -60,6 +60,8 @@ else:
     if is_admin:
         all_clients = get_all_clients()
         client_options = all_clients["client_id"].tolist()
+        dashboard_filters = ["All clients", *client_options]
+        selected_dashboard_filter = st.selectbox("Dashboard view", dashboard_filters, index=0, key="admin_dashboard_selector")
         selected_client = st.selectbox("View client workspace", client_options, key="admin_client_selector") if client_options else None
         st.caption(f"Logged in as {st.session_state.get('username')} (superadmin)")
 
@@ -68,8 +70,9 @@ else:
         )
 
         with tab_dashboard:
-            if selected_client:
-                render_dashboard_tab(selected_client)
+            if client_options:
+                dashboard_client_id = "__all__" if selected_dashboard_filter == "All clients" else selected_dashboard_filter
+                render_dashboard_tab(dashboard_client_id)
             else:
                 st.info("No clients found.")
 

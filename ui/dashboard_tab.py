@@ -25,13 +25,25 @@ def _fmt_days_remaining(value: float) -> str:
 
 
 def render_dashboard_tab(client_id):
-    profile = get_client_profile(client_id)
+    viewing_all_clients = str(client_id) == "__all__"
+    profile = (
+        {
+            "client_name": "All clients",
+            "business_overview": "Combined view across every client.",
+            "opening_hours": "-",
+            "closing_hours": "-",
+            "max_discount_pct": 15,
+            "sales_commission_pct": 3,
+            "return_refund_policy": "Depends on client policy",
+        }
+        if viewing_all_clients
+        else get_client_profile(client_id)
+    )
     if profile:
         st.caption(
             f"Client: {profile.get('client_name')} | Hours: {profile.get('opening_hours')} - {profile.get('closing_hours')} | "
             f"Max discount: {profile.get('max_discount_pct')}%"
         )
-
     with st.sidebar:
         st.subheader("Client policy snapshot")
         st.write(f"**Business:** {profile.get('business_overview', 'N/A')}")
