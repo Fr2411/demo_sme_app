@@ -110,9 +110,11 @@ def render_dashboard_tab(client_id):
     d1, d2 = st.columns(2)
     d1.write("Days of inventory remaining")
     days_table = inventory["days_remaining"].copy()
+    day_columns = ["product_name", "quantity", "daily_velocity", "days_remaining"]
+    days_table = days_table.reindex(columns=day_columns)
     if not days_table.empty:
         days_table["days_remaining"] = days_table["days_remaining"].apply(_fmt_days_remaining)
-    d1.dataframe(days_table[["product_name", "quantity", "daily_velocity", "days_remaining"]], use_container_width=True, hide_index=True)
+    d1.dataframe(days_table, use_container_width=True, hide_index=True)
 
     d2.write("Stock aging (API)")
     d2.dataframe(inventory["stock_aging"], use_container_width=True, hide_index=True)

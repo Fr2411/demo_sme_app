@@ -90,6 +90,8 @@ EASY_ECOM_API_TOKEN=<jwt_access_token>
 
 When configured, dashboard widgets pull returns, stock-aging, inventory movements, orders, and session logs from API endpoints; otherwise the UI gracefully falls back to CSV-only metrics.
 
+Dashboard inventory analytics are also empty-state safe for newly created clients: when no products/sales exist yet, the **Days of inventory remaining** table still renders with the expected columns instead of raising a pandas column-selection error.
+
 
 ---
 
@@ -341,4 +343,3 @@ The dashboard tab is now organized as a command-center layout while preserving t
 6. **Sidebar policy snapshot**: business profile, operating hours, discount cap, commission rate, and return policy.
 
 This implementation keeps the original data model intact (no schema migration required) and uses existing data sources in `DB/*.csv`, AI agents, and FastAPI endpoints.
-

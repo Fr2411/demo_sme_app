@@ -119,11 +119,12 @@ def sales_performance_frames(df_sales: pd.DataFrame) -> dict[str, pd.DataFrame |
 
 def inventory_health_frames(df_products: pd.DataFrame, df_sales: pd.DataFrame, stock_aging_rows: list[dict]) -> dict:
     products = df_products.copy()
+    days_remaining_columns = ["product_name", "quantity", "quantity_sold", "daily_velocity", "days_remaining"]
     if products.empty:
         return {
             "low_stock": pd.DataFrame(),
             "out_of_stock": pd.DataFrame(),
-            "days_remaining": pd.DataFrame(),
+            "days_remaining": pd.DataFrame(columns=days_remaining_columns),
             "stock_aging": pd.DataFrame(stock_aging_rows),
         }
 
@@ -145,6 +146,7 @@ def inventory_health_frames(df_products: pd.DataFrame, df_sales: pd.DataFrame, s
         lambda row: (row["quantity"] / row["daily_velocity"]) if row["daily_velocity"] > 0 else float("inf"), axis=1
     )
     days_df = days_df.sort_values("days_remaining", ascending=True)
+    days_df = days_df.reindex(columns=days_remaining_columns)
 
     return {
         "low_stock": low_stock,
