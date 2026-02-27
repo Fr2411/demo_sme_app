@@ -17,23 +17,40 @@ A lightweight Streamlit app for small-business inventory and sales tracking with
    - Username: `admin`
    - Password: `admin123`
 
+## Project Structure
+
+```text
+.
+├── app.py                     # Main Streamlit entry point (routing + session flow)
+├── config.py                  # Global constants (file paths, app title/icon)
+├── services/
+│   ├── auth_service.py        # Authentication logic
+│   ├── common.py              # Shared helpers (name normalization)
+│   ├── inventory_service.py   # Inventory load/repair + weighted average updates
+│   ├── sales_service.py       # Sales load/repair + stock deduction
+│   └── analytics_service.py   # KPI and sale-preview calculations
+└── ui/
+    ├── dashboard_tab.py       # Dashboard tab rendering
+    ├── add_product_tab.py     # Add-product form tab rendering
+    ├── assets_tab.py          # Assets summary table tab rendering
+    └── sales_tab.py           # Sales entry tab rendering
+```
+
 ## Project Flow
 
 1. **Authentication**
-   - Credentials are loaded from `users.csv`.
-2. **Product ingestion and normalization**
-   - `products.csv` is loaded and auto-repaired (missing columns, bad numeric values, inconsistent names).
-   - Duplicate product rows are consolidated by name.
-   - Inventory value is recalculated from source inputs (`quantity * unit_cost`).
+   - Credentials are loaded from `users.csv` via `services/auth_service.py`.
+2. **Data loading and normalization**
+   - Products and sales CSV files are auto-repaired for missing columns and invalid values.
+   - Product names are normalized (trimmed + lowercase) to avoid duplicate keys.
 3. **Stock updates (purchases)**
-   - New purchases update quantity using weighted-average unit cost.
+   - New purchases are merged into existing stock using weighted-average unit cost.
 4. **Sales recording**
    - Sales are validated against available stock.
-   - Revenue, COGS, and profit are computed per sale.
-   - Inventory quantity and total inventory value are reduced automatically.
+   - Revenue, COGS, and profit are computed and persisted.
+   - Inventory quantity and value are reduced automatically.
 5. **Dashboard analytics**
-   - Displays total asset value, stock units, revenue, total profit, and average margin.
-   - Includes bar charts for assets, sales, and profit by product.
+   - KPIs and product-level visualizations are rendered from cleaned data.
 
 ## Critical Logic
 
@@ -51,12 +68,6 @@ A lightweight Streamlit app for small-business inventory and sales tracking with
   - Product names are normalized to lowercase/trimmed form.
   - Negative/invalid numeric values are sanitized.
   - Sales derived fields are recalculated on load to fix historical miscalculations.
-
-## Data Files
-
-- `products.csv`: current inventory snapshot.
-- `sales.csv`: historical sales ledger.
-- `users.csv`: login credentials.
 
 ## Dependencies
 
