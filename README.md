@@ -69,10 +69,14 @@ uvicorn backend.app.main:app --reload --port 8000
 streamlit run app.py
 ```
 
-Default demo login:
+Default client login:
 - Client ID: `demo_client`
 - Username: `admin`
 - Password: `admin123`
+
+Default superadmin login (separate admin portal):
+- Username: `superadmin`
+- Password: `superadmin123`
 
 
 ### Optional API-backed dashboard integration
@@ -147,16 +151,22 @@ The Streamlit workflow now uses a shared multi-client CSV database under `DB/`:
 - `DB/users.csv`: login users per client (`client_id`, `username`, `password`, `role`).
 - `DB/products.csv`: inventory rows with `client_id`.
 - `DB/sales.csv`: sales rows with `client_id`.
-- `DB/clients.csv`: client business profile and policy controls:
+- `DB/clients.csv`: client business profile, communication channels, and policy controls:
   - `business_overview`
   - `opening_hours` / `closing_hours`
   - `max_discount_pct`
   - `return_refund_policy`
   - `sales_commission_pct`
+  - `whatsapp_number`
+  - `messenger`
+  - `required_api_keys`
 
 ### How isolation works
-- Login requires `client_id`, username, and password.
-- Inventory and sales services always filter by the logged-in `client_id`.
+- Client login requires `client_id`, username, and password.
+- Admin login is separate (`superadmin` role) and unlocks a dedicated **Client Admin** tab.
+- The Client Admin tab can view all client/user/product/sales rows and create a new client + initial owner credentials in one flow.
+- Non-admin users never see the admin panel and only access their own `client_id` data.
+- Inventory and sales services always filter by the active `client_id` workspace.
 - Writes are merged back into shared CSVs while preserving records for other clients.
 
 ### AI agent integration with client policies

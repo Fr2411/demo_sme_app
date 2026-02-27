@@ -1,2 +1,2 @@
-client_id,client_name,business_overview,opening_hours,closing_hours,max_discount_pct,return_refund_policy,sales_commission_pct
-demo_client,Demo Retail Co,General retail store focusing on fast-moving household products.,09:00,21:00,15,Returns accepted within 7 days with valid bill.,3
+client_id,client_name,business_overview,opening_hours,closing_hours,max_discount_pct,return_refund_policy,sales_commission_pct,whatsapp_number,messenger,required_api_keys
+demo_client,Demo Retail Co,General retail store focusing on fast-moving household products.,09:00,21:00,15,Returns accepted within 7 days with valid bill.,3,10000000000,m.me/demo-retail,"WHATSAPP_ACCESS_TOKEN,WHATSAPP_PHONE_NUMBER_ID,OPENAI_API_KEY"
