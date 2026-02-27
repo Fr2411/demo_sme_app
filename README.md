@@ -264,3 +264,84 @@ pytest backend/tests -q
 coverage run -m pytest backend/tests -q
 coverage report -m
 ```
+
+## Deployment (Docker + Nginx + PostgreSQL/pgvector + optional Redis)
+
+This repo now includes production-oriented deployment assets:
+
+- `Dockerfile` (API container image)
+- `docker-compose.yml` (API + pgvector PostgreSQL + Nginx + optional Redis)
+- `deployment/nginx/default.conf` (reverse proxy)
+- `deployment/scripts/wait-for-postgres.sh` (DB readiness check)
+- `deployment/scripts/start-api.sh` (migrate + start API)
+
+### Local container deployment
+
+1. Create/update your backend environment values in `.env.example` (or copy to `.env` and adjust values).
+2. Start services:
+   ```bash
+   docker compose up -d --build
+   ```
+3. API is available behind Nginx at `http://localhost`.
+4. Health check:
+   ```bash
+   curl http://localhost/health
+   ```
+
+### Enable Redis (optional)
+
+Redis is configured as an optional profile named `cache`.
+
+```bash
+docker compose --profile cache up -d --build
+```
+
+### Render deployment notes
+
+- Use a **Web Service** for the backend container.
+- Build command: `docker build -t easy-ecom-api .`
+- Start command: uses container `CMD` (`/app/deployment/scripts/start-api.sh`).
+- Set environment variables from `.env.example`.
+- Add a managed PostgreSQL instance and set `DATABASE_URL` to its connection string.
+- If Redis is needed, add a Redis instance and set `REDIS_URL`.
+- If you also want Nginx in front, deploy Nginx as a separate service or use Render edge routing directly to FastAPI.
+
+### Railway deployment notes
+
+- Create a new project and deploy from this repo with **Dockerfile**.
+- Add PostgreSQL plugin/service; set `DATABASE_URL` in backend service.
+- Optionally add Redis plugin/service; set `REDIS_URL`.
+- Expose `PORT` (Railway injects it automatically).
+- Startup script handles migrations automatically (`RUN_MIGRATIONS=1`).
+
+### AWS ECS (Fargate) deployment notes
+
+- Push image built from `Dockerfile` to ECR.
+- Create ECS Task Definition for the API container.
+- Add env vars + secrets via AWS Secrets Manager/SSM.
+- Use RDS PostgreSQL with pgvector enabled (`CREATE EXTENSION vector;`).
+- Optional: ElastiCache Redis and set `REDIS_URL`.
+- Put ALB in front of ECS service (path `/` -> container port 8000), or run Nginx as sidecar if strict reverse-proxy rules are required.
+- Health check path: `/health`.
+
+### GCP deployment notes
+
+Recommended paths:
+
+1. **Cloud Run (simple)**
+   - Build from `Dockerfile`.
+   - Attach Cloud SQL PostgreSQL and set `DATABASE_URL`.
+   - Optional Memorystore Redis and set `REDIS_URL`.
+   - Route traffic directly to container; Nginx optional.
+
+2. **GKE (advanced)**
+   - Use the same image and convert compose services into Kubernetes manifests.
+   - Use Cloud SQL + Memorystore for managed stateful dependencies.
+   - Ingress (GKE Ingress/Nginx Ingress) can replace `deployment/nginx/default.conf`.
+
+### Production recommendations
+
+- Move secrets to managed secret stores (never commit real credentials).
+- Use HTTPS termination at ingress/load-balancer level.
+- Set `UVICORN_WORKERS` based on CPU (typically `2 x vCPU` as a starting point).
+- Keep `RUN_MIGRATIONS=1` for single-instance startup, or move migrations to a one-off release job in multi-instance setups.
