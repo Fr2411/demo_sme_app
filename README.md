@@ -168,7 +168,7 @@ The Streamlit workflow now uses a shared multi-client CSV database under `DB/`:
 - Admin login is separate (`superadmin` role) and unlocks a dedicated **Client Admin** tab.
 - The Client Admin tab can view all client/user/product/sales rows and create a new client + initial owner credentials in one flow.
 - Non-admin users never see the admin panel and only access their own `client_id` data.
-- Inventory and sales services always filter by the active `client_id` workspace.
+- Inventory and sales services always filter by the active `client_id` workspace, while superadmin uses the **View client workspace** selector (default: **All clients**) to control whether the dashboard is aggregated or narrowed to a specific client.
 - Writes are merged back into shared CSVs while preserving records for other clients.
 
 ### AI agent integration with client policies

@@ -60,7 +60,14 @@ else:
     if is_admin:
         all_clients = get_all_clients()
         client_options = all_clients["client_id"].tolist()
-        selected_client = st.selectbox("View client workspace", client_options, key="admin_client_selector") if client_options else None
+        workspace_options = ["__all__", *client_options]
+        selected_workspace = st.selectbox(
+            "View client workspace",
+            workspace_options,
+            index=0,
+            format_func=lambda option: "All clients" if option == "__all__" else option,
+            key="admin_client_selector",
+        )
         st.caption(f"Logged in as {st.session_state.get('username')} (superadmin)")
 
         tab_dashboard, tab_add, tab_assets, tab_sales, tab_admin = st.tabs(
@@ -68,28 +75,25 @@ else:
         )
 
         with tab_dashboard:
-            if selected_client:
-                render_dashboard_tab(selected_client)
-            else:
-                st.info("No clients found.")
+            render_dashboard_tab(selected_workspace)
 
         with tab_add:
-            if selected_client:
-                render_add_product_tab(selected_client)
+            if selected_workspace != "__all__":
+                render_add_product_tab(selected_workspace)
             else:
-                st.info("No clients found.")
+                st.info("Select a specific client in 'View client workspace' to add products.")
 
         with tab_assets:
-            if selected_client:
-                render_assets_tab(selected_client)
+            if selected_workspace != "__all__":
+                render_assets_tab(selected_workspace)
             else:
-                st.info("No clients found.")
+                st.info("Select a specific client in 'View client workspace' to view assets.")
 
         with tab_sales:
-            if selected_client:
-                render_sales_tab(selected_client)
+            if selected_workspace != "__all__":
+                render_sales_tab(selected_workspace)
             else:
-                st.info("No clients found.")
+                st.info("Select a specific client in 'View client workspace' to add sales.")
 
         with tab_admin:
             render_admin_tab()
