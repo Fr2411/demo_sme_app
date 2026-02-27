@@ -77,3 +77,47 @@ From `requirements.txt`:
 - `streamlit`
 - `pandas`
 - `plotly`
+
+---
+
+## Enterprise Backend Scaffold (FastAPI + PostgreSQL)
+
+A production-oriented backend scaffold now exists under `backend/` with:
+
+- API versioning via `/api/v1`
+- JWT authentication and bcrypt password hashing
+- RBAC primitives (`users`, `roles`, `permissions`)
+- SQLAlchemy session/config setup
+- Alembic migration environment
+- Dockerized API runtime + pgvector-ready PostgreSQL compose service
+
+### Quickstart (Backend)
+
+1. Install dependencies:
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
+2. Start PostgreSQL (pgvector image):
+   ```bash
+   docker compose up -d db
+   ```
+3. Run migrations (after creating your first revision):
+   ```bash
+   cd backend && alembic upgrade head
+   ```
+4. Start API:
+   ```bash
+   uvicorn backend.app.main:app --reload --port 8000
+   ```
+
+### Implemented Section C Components
+
+- `backend/app/main.py` – FastAPI app bootstrap and middleware.
+- `backend/app/api/v1/router.py` – versioned API router.
+- `backend/app/api/v1/endpoints/auth.py` – auth endpoints (`/register`, `/login`).
+- `backend/app/api/deps.py` – JWT dependency and current-user resolver.
+- `backend/app/core/security.py` – password hashing + JWT token creation.
+- `backend/app/core/config.py` – environment-driven settings.
+- `backend/app/db/session.py` – SQLAlchemy engine/session.
+- `backend/alembic/*` – migration scaffolding.
+
