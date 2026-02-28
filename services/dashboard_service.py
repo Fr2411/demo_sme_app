@@ -10,6 +10,14 @@ import pandas as pd
 from ai_agents.discount_supervisor import DiscountSupervisor
 
 MOVEMENT_TYPES = ["in", "out", "adjustment", "return_in", "return_out"]
+DASHBOARD_API_ENDPOINTS = [
+    {"label": "Profit & loss", "path": "/api/v1/reports/profit-loss", "params_key": "profit_loss"},
+    {"label": "Returns", "path": "/api/v1/returns", "params_key": "returns"},
+    {"label": "Stock aging", "path": "/api/v1/reports/stock-aging", "params_key": "stock_aging"},
+    {"label": "Inventory movements", "path": "/api/v1/inventory/movements", "params_key": "movements"},
+    {"label": "Session logs", "path": "/api/v1/sessions/logs", "params_key": "session_logs"},
+    {"label": "Orders", "path": "/api/v1/orders", "params_key": "orders"},
+]
 
 
 def _coerce_sales_frame(df_sales: pd.DataFrame) -> pd.DataFrame:
@@ -232,14 +240,31 @@ def _request_json(path: str, params: dict | None = None) -> list[dict] | dict | 
 
 def load_api_dashboard_context() -> dict:
     today = datetime.now().strftime("%Y-%m-%d")
-    profit_loss = _request_json("/api/v1/reports/profit-loss", {"period_start": today, "period_end": today})
-    returns = _request_json("/api/v1/returns")
-    stock_aging = _request_json("/api/v1/reports/stock-aging", {"as_of_date": today})
-    movements = _request_json("/api/v1/inventory/movements")
-    session_logs = _request_json("/api/v1/sessions/logs")
-    orders = _request_json("/api/v1/orders")
+    query_params = {
+        "profit_loss": {"period_start": today, "period_end": today},
+        "stock_aging": {"as_of_date": today},
+    }
+    endpoint_payloads = {
+        endpoint["params_key"]: _request_json(endpoint["path"], query_params.get(endpoint["params_key"]))
+        for endpoint in DASHBOARD_API_ENDPOINTS
+    }
+
+    profit_loss = endpoint_payloads["profit_loss"]
+    returns = endpoint_payloads["returns"]
+    stock_aging = endpoint_payloads["stock_aging"]
+    movements = endpoint_payloads["movements"]
+    session_logs = endpoint_payloads["session_logs"]
+    orders = endpoint_payloads["orders"]
 
     stock_aging_rows = stock_aging.get("rows", []) if isinstance(stock_aging, dict) else []
+    endpoint_statuses = [
+        {
+            "endpoint": endpoint["path"],
+            "label": endpoint["label"],
+            "connected": endpoint_payloads[endpoint["params_key"]] is not None,
+        }
+        for endpoint in DASHBOARD_API_ENDPOINTS
+    ]
 
     return {
         "profit_loss": profit_loss if isinstance(profit_loss, dict) else {},
@@ -248,7 +273,8 @@ def load_api_dashboard_context() -> dict:
         "movements": movements if isinstance(movements, list) else [],
         "session_logs": session_logs if isinstance(session_logs, list) else [],
         "orders": orders if isinstance(orders, list) else [],
-        "api_connected": any([profit_loss, returns, stock_aging, movements, session_logs, orders]),
+        "endpoint_statuses": endpoint_statuses,
+        "api_connected": any(status["connected"] for status in endpoint_statuses),
     }
 
 

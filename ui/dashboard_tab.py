@@ -175,5 +175,9 @@ def render_dashboard_tab(client_id):
         st.write("Try prompts like: 'Why did margin drop this week?' or 'Show low stock SKUs with highest revenue impact'.")
     st.write(
         "Webhook/API health: "
-        + ("Connected to FastAPI endpoints (orders/returns/reports/sessions)." if api_context["api_connected"] else "API disconnected; showing CSV-backed analytics.")
+        + ("Connected to FastAPI dashboard endpoints." if api_context["api_connected"] else "API disconnected; showing CSV-backed analytics.")
     )
+    endpoint_statuses = pd.DataFrame(api_context.get("endpoint_statuses", []))
+    if not endpoint_statuses.empty:
+        endpoint_statuses["status"] = endpoint_statuses["connected"].map({True: "Connected", False: "Unavailable"})
+        st.dataframe(endpoint_statuses[["label", "endpoint", "status"]], use_container_width=True, hide_index=True)
