@@ -165,14 +165,11 @@ The Streamlit workflow now uses a shared multi-client CSV database under `DB/`:
 - `DB/finance_transactions.csv`: manual finance ledger (`transaction_type`, `category`, `amount`, `created_by`) per client.
 - `DB/finance_salaries.csv`: salary setup (`employee_name`, `monthly_salary`, `payment_day`, `status`) per client.
 - `DB/clients.csv`: client business profile, communication channels, and policy controls:
-  - `business_overview`
-  - `opening_hours` / `closing_hours`
-  - `max_discount_pct`
-  - `return_refund_policy`
-  - `sales_commission_pct`
-  - `whatsapp_number`
-  - `messenger`
-  - `required_api_keys`
+  - Core profile: `business_overview`, `opening_hours`, `closing_hours`, `max_discount_pct`, `return_refund_policy`, `sales_commission_pct`
+  - WhatsApp integration: `whatsapp_enabled`, `whatsapp_access_token`, `whatsapp_phone_number_id`, `whatsapp_business_account_id`, `whatsapp_app_id`, `whatsapp_app_secret`, `whatsapp_webhook_verify_token`, `whatsapp_token_expires_at`
+  - Messenger integration: `messenger_enabled`, `messenger_page_access_token`, `messenger_page_id`, `messenger_app_id`, `messenger_app_secret`, `messenger_webhook_verify_token`, `messenger_token_expires_at`
+  - Instagram integration: `instagram_enabled`, `instagram_page_access_token`, `instagram_business_account_id`, `instagram_app_id`, `instagram_app_secret`, `instagram_webhook_verify_token`, `instagram_token_expires_at`
+  - Shared Meta setup: `meta_business_manager_id`
 
 ### How isolation works
 - Client login requires `client_id`, username, and password.
