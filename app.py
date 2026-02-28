@@ -101,7 +101,7 @@ else:
                         st.info("Select a specific client in Client filter to record sales.")
                 elif tab_key == "finance":
                     if active_client_scope != "__all__":
-                        render_finance_tab(active_client_scope)
+                        render_finance_tab(active_client_scope, active_username)
                     else:
                         st.info("Select a specific client in Client filter to view finance details.")
                 elif tab_key == "client_admin":
@@ -121,7 +121,7 @@ else:
             user_tabs.append(("📦 Assets Summary", "assets"))
         if user_access.get("sales", False):
             user_tabs.append(("🧾 Sales Entry", "sales"))
-        if is_owner and user_access.get("finance", False):
+        if user_access.get("finance", False):
             user_tabs.append(("💰 Finance", "finance"))
 
         if not user_tabs:
@@ -139,7 +139,7 @@ else:
                     elif tab_key == "sales":
                         render_sales_tab(active_client_id, include_finance=user_access.get("finance", False))
                     elif tab_key == "finance":
-                        render_finance_tab(active_client_id)
+                        render_finance_tab(active_client_id, active_username)
 
     if st.button("Logout"):
         st.session_state.logged_in = False
