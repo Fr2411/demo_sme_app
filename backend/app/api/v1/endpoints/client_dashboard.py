@@ -27,8 +27,8 @@ router = APIRouter(prefix='/client', tags=['client-dashboard'])
 
 def _require_client(user=Depends(get_current_user)):
     roles = {r.name for r in user.roles}
-    if 'client' not in roles:
-        raise HTTPException(status_code=403, detail='Client role required')
+    if 'employee' not in roles:
+        raise HTTPException(status_code=403, detail='Employee role required')
     return user
 
 

@@ -69,14 +69,15 @@ uvicorn backend.app.main:app --reload --port 8000
 streamlit run app.py
 ```
 
-Default client login:
+Default employee login:
 - Client ID: `demo_client`
+- Username: `employee`
+- Password: `employee123`
+
+Default platform admin login:
+- Client ID: `__admin__`
 - Username: `admin`
 - Password: `admin123`
-
-Default superadmin login (separate admin portal):
-- Username: `superadmin`
-- Password: `superadmin123`
 
 
 ### Optional API-backed dashboard integration
@@ -167,16 +168,22 @@ The Streamlit workflow now uses a shared multi-client CSV database under `DB/`:
 
 ### How isolation works
 - Client login requires `client_id`, username, and password.
-- Admin login is separate (`superadmin` role) and unlocks a dedicated **Client Admin** tab.
-- The Client Admin tab can view all client/user/product/sales rows and create a new client + initial owner credentials in one flow.
-- Non-admin users never see the admin panel and only access their own `client_id` data.
-- Inventory and sales services always filter by the active `client_id` workspace, while superadmin controls now use a single **Client filter** across the dashboard and workspace tabs: default is **All clients** for rolled-up visibility, and selecting a client scopes analytics plus client-specific actions to that workspace.
+- Easy Ecom now supports only two roles: `admin` and `employee`.
+- Admin login (`client_id=__admin__`) unlocks a dedicated **Client Admin** tab plus a **Finance** tab and supports cross-client access via a single **Client filter**.
+- Employee users only access their own `client_id` workspace and never see finance screens or finance values in operational tabs.
+- Inventory and sales services always filter by the active `client_id` workspace.
 - Writes are merged back into shared CSVs while preserving records for other clients.
 
 ### AI agent integration with client policies
 - `AgentOrchestrator` enriches incoming payloads with `client_context` from `DB/clients.csv` when `client_id` is provided.
 - Discount decisions enforce `max_discount_pct` and include commission metadata in responses.
 - Prompt context now includes client business/policy details so agents can use them as needed.
+
+
+### Role-based access redesign (Admin vs Employee)
+- **Admin** can access all tabs and finance data (Finance tab, cost/profit/revenue views, finance API endpoints).
+- **Employee** can access dashboard, inventory, and sales operations but all finance data is hidden and the finance tab is removed.
+- Legacy CSV roles (`superadmin`, `owner`, `manager`, `staff`) are normalized automatically into `admin` or `employee` during login.
 
 ## 4) API Documentation
 
@@ -389,11 +396,8 @@ This implementation keeps the original data model intact (no schema migration re
 - `POST /api/v1/client/support-message`
 
 ### RBAC matrix
-- `admin`: full finance + dashboard ops
-- `finance_manager`: full finance + payroll approval
-- `inventory_manager`: read-only finance reports/dashboard
-- `sales_agent`: denied finance endpoints
-- `client`: only `/api/v1/client/*` endpoints
+- `admin`: full finance + dashboard operations.
+- `employee`: all non-finance workflows; finance endpoints are blocked.
 
 ### Security and audit controls
 - Financial operations generate `audit_logs` records (action, entity, actor, timestamp).
