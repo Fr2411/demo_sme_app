@@ -162,6 +162,8 @@ The Streamlit workflow now uses a shared multi-client CSV database under `DB/`:
 - `DB/user_feature_access.csv`: per-user feature toggle map (`client_id`, `username`, `feature`, `enabled`).
 - `DB/products.csv`: inventory rows with `client_id`.
 - `DB/sales.csv`: sales rows with `client_id`.
+- `DB/finance_transactions.csv`: manual finance ledger (`transaction_type`, `category`, `amount`, `created_by`) per client.
+- `DB/finance_salaries.csv`: salary setup (`employee_name`, `monthly_salary`, `payment_day`, `status`) per client.
 - `DB/clients.csv`: client business profile, communication channels, and policy controls:
   - `business_overview`
   - `opening_hours` / `closing_hours`
@@ -177,7 +179,7 @@ The Streamlit workflow now uses a shared multi-client CSV database under `DB/`:
 - Easy Ecom now supports one platform role (`admin`) and two per-client roles (`owner`, `employee`).
 - Platform admin login (`client_id=__admin__`) unlocks the **Client Admin** tab, **Finance** tab, and cross-client access via **Client filter**.
 - Client owners can access all tabs for their own client, including finance.
-- Client employees only access their own `client_id` workspace and never see finance screens or finance values in operational tabs.
+- Client employees only access their own `client_id` workspace. Finance can be granted per user by platform admin using the Role Access toggle (off by default).
 - Inventory and sales services always filter by the active `client_id` workspace.
 - Writes are merged back into shared CSVs while preserving records for other clients.
 
@@ -190,10 +192,16 @@ The Streamlit workflow now uses a shared multi-client CSV database under `DB/`:
 ### Role-based access redesign (Platform Admin + Client Owner/Employee)
 - **Admin** (`client_id=__admin__`) can access all clients, all tabs, and finance endpoints.
 - **Owner** (per client) can access all tabs and finance data, but only within that client workspace.
-- **Employee** (per client) can access operations tabs only; finance data and finance tab are hidden.
+- **Employee** (per client) can access operations tabs by default; finance can be explicitly enabled per user from Role Access when you want delegated bookkeeping.
 - Legacy CSV roles are normalized automatically (`superadmin -> admin`, `manager -> owner`, `staff -> employee`).
 - Platform admins now have a dedicated **Role Access** tab to enable/disable each feature per user with toggle controls.
 - Feature toggle enforcement is applied at runtime; users only see tabs that are currently enabled for their login.
+
+### Finance operations (Streamlit)
+- Finance tab now includes a **manual transaction form** so authorized users can add income/expense rows (salary, rent, utility, logistics, etc.) to a client ledger.
+- Finance tab also includes **salary setup** management for employee payroll planning (name, role, monthly salary, payment day, status).
+- Net cash flow KPI is calculated as total income minus total expense from `finance_transactions.csv`.
+- Access control is still centralized through `DB/user_feature_access.csv` and platform **Role Access** toggles.
 
 ## 4) API Documentation
 

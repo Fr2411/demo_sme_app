@@ -4,7 +4,16 @@ from pathlib import Path
 
 import pandas as pd
 
-from config import CLIENTS_FILE, DB_DIR, PRODUCTS_FILE, SALES_FILE, USER_ACCESS_FILE, USERS_FILE
+from config import (
+    CLIENTS_FILE,
+    DB_DIR,
+    FINANCE_SALARIES_FILE,
+    FINANCE_TRANSACTIONS_FILE,
+    PRODUCTS_FILE,
+    SALES_FILE,
+    USER_ACCESS_FILE,
+    USERS_FILE,
+)
 
 CLIENT_COLUMNS = [
     "client_id",
@@ -33,6 +42,26 @@ SALES_COLUMNS = [
     "profit",
 ]
 USER_ACCESS_COLUMNS = ["client_id", "username", "feature", "enabled"]
+FINANCE_TRANSACTION_COLUMNS = [
+    "client_id",
+    "created_at",
+    "transaction_date",
+    "transaction_type",
+    "category",
+    "title",
+    "notes",
+    "amount",
+    "created_by",
+]
+FINANCE_SALARY_COLUMNS = [
+    "client_id",
+    "employee_name",
+    "role_title",
+    "monthly_salary",
+    "payment_day",
+    "status",
+    "updated_at",
+]
 
 
 SEED_CLIENTS = [
@@ -117,6 +146,8 @@ def ensure_db_structure() -> None:
     _ensure_csv(PRODUCTS_FILE, PRODUCT_COLUMNS, SEED_PRODUCTS)
     _ensure_csv(SALES_FILE, SALES_COLUMNS, SEED_SALES)
     _ensure_csv(USER_ACCESS_FILE, USER_ACCESS_COLUMNS, [])
+    _ensure_csv(FINANCE_TRANSACTIONS_FILE, FINANCE_TRANSACTION_COLUMNS, [])
+    _ensure_csv(FINANCE_SALARIES_FILE, FINANCE_SALARY_COLUMNS, [])
 
     _ensure_seed_rows(USERS_FILE, SEED_USERS, ["client_id", "username"])
     _ensure_seed_rows(CLIENTS_FILE, SEED_CLIENTS, ["client_id"])
