@@ -45,7 +45,7 @@ def _setup_accounts(db_session):
 
 
 def test_expense_journal_balancing(client, db_session):
-    headers, _ = _auth_headers_for(client, db_session, 'fin_mgr_1', 'fin1@example.com', 'finance_manager')
+    headers, _ = _auth_headers_for(client, db_session, 'fin_mgr_1', 'fin1@example.com', 'owner')
     _setup_accounts(db_session)
 
     response = client.post(
@@ -71,7 +71,7 @@ def test_expense_journal_balancing(client, db_session):
 
 
 def test_payroll_processing_accuracy(client, db_session):
-    headers, _ = _auth_headers_for(client, db_session, 'fin_mgr_2', 'fin2@example.com', 'finance_manager')
+    headers, _ = _auth_headers_for(client, db_session, 'fin_mgr_2', 'fin2@example.com', 'owner')
     _setup_accounts(db_session)
 
     employee = Employee(
@@ -102,7 +102,7 @@ def test_payroll_processing_accuracy(client, db_session):
 
 
 def test_cashflow_calculations(client, db_session):
-    headers, _ = _auth_headers_for(client, db_session, 'fin_mgr_3', 'fin3@example.com', 'finance_manager')
+    headers, _ = _auth_headers_for(client, db_session, 'fin_mgr_3', 'fin3@example.com', 'owner')
     _setup_accounts(db_session)
 
     client.post(
@@ -136,7 +136,7 @@ def test_cashflow_calculations(client, db_session):
 
 
 def test_client_dashboard_data_integrity(client, db_session):
-    headers, user = _auth_headers_for(client, db_session, 'client_user_1', 'client1@example.com', 'client')
+    headers, user = _auth_headers_for(client, db_session, 'client_user_1', 'client1@example.com', 'employee')
     customer = Customer(full_name='Client One', email=user.email, phone_e164='+19990000001')
     db_session.add(customer)
     db_session.flush()
@@ -181,8 +181,8 @@ def test_client_dashboard_data_integrity(client, db_session):
 
 
 def test_rbac_financial_access_enforcement(client, db_session):
-    headers_sales, _ = _auth_headers_for(client, db_session, 'sales_1', 'sales1@example.com', 'sales_agent')
-    headers_inventory, _ = _auth_headers_for(client, db_session, 'inv_1', 'inv1@example.com', 'inventory_manager')
+    headers_employee, _ = _auth_headers_for(client, db_session, 'employee_1', 'employee1@example.com', 'employee')
+    headers_owner, _ = _auth_headers_for(client, db_session, 'owner_1', 'owner1@example.com', 'owner')
 
     create_response = client.post(
         '/api/v1/finance/expenses',
@@ -194,9 +194,12 @@ def test_rbac_financial_access_enforcement(client, db_session):
             'payment_method': 'cash',
             'expense_date': date.today().isoformat(),
         },
-        headers=headers_sales,
+        headers=headers_employee,
     )
     assert create_response.status_code == 403
 
-    read_response = client.get('/api/v1/finance/reports/pnl?start_date=2026-01-01&end_date=2026-01-31', headers=headers_inventory)
-    assert read_response.status_code == 200
+    read_response = client.get('/api/v1/finance/reports/pnl?start_date=2026-01-01&end_date=2026-01-31', headers=headers_employee)
+    assert read_response.status_code == 403
+
+    owner_read_response = client.get('/api/v1/finance/reports/pnl?start_date=2026-01-01&end_date=2026-01-31', headers=headers_owner)
+    assert owner_read_response.status_code == 200

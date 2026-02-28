@@ -1,3 +1,4 @@
 client_id,username,password,role
-demo_client,admin,admin123,owner
-__admin__,superadmin,superadmin123,superadmin
+__admin__,admin,admin123,admin
+demo_client,owner,owner123,owner
+demo_client,employee,employee123,employee

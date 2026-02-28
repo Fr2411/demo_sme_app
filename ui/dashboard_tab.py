@@ -24,7 +24,7 @@ def _fmt_days_remaining(value: float) -> str:
     return f"{max(value, 0):.1f} days"
 
 
-def render_dashboard_tab(client_id):
+def render_dashboard_tab(client_id, include_finance: bool = True):
     viewing_all_clients = str(client_id) == "__all__"
     profile = (
         {
@@ -57,58 +57,66 @@ def render_dashboard_tab(client_id):
 
     kpis = compute_executive_kpis(df_products, df_sales, api_context["returns"])
 
-    st.subheader("Executive KPI strip")
-    c1, c2, c3, c4, c5 = st.columns(5)
-    c1.metric("Revenue (Today)", f"${kpis['today_revenue']:,.2f}", delta=f"Week ${kpis['week_revenue']:,.2f}")
-    c2.metric("Revenue (MTD)", f"${kpis['mtd_revenue']:,.2f}", delta=f"Week Profit ${kpis['week_profit']:,.2f}")
-    c3.metric("Gross Profit / Margin", f"${kpis['gross_profit']:,.2f}", delta=f"{kpis['gross_margin']:.1f}% margin")
-    c4.metric("Inventory Value", f"${kpis['inventory_value']:,.2f}", delta=f"Sell-through {kpis['sell_through']:.1f}%")
-    c5.metric("Return Rate / Refunds", f"{kpis['return_rate']:.1f}%", delta=f"${kpis['refund_value']:,.2f}")
+    if include_finance:
+        st.subheader("Executive KPI strip")
+        c1, c2, c3, c4, c5 = st.columns(5)
+        c1.metric("Revenue (Today)", f"${kpis['today_revenue']:,.2f}", delta=f"Week ${kpis['week_revenue']:,.2f}")
+        c2.metric("Revenue (MTD)", f"${kpis['mtd_revenue']:,.2f}", delta=f"Week Profit ${kpis['week_profit']:,.2f}")
+        c3.metric("Gross Profit / Margin", f"${kpis['gross_profit']:,.2f}", delta=f"{kpis['gross_margin']:.1f}% margin")
+        c4.metric("Inventory Value", f"${kpis['inventory_value']:,.2f}", delta=f"Sell-through {kpis['sell_through']:.1f}%")
+        c5.metric("Return Rate / Refunds", f"{kpis['return_rate']:.1f}%", delta=f"${kpis['refund_value']:,.2f}")
 
-    st.markdown("---")
+        st.markdown("---")
 
-    st.subheader("Sales performance")
-    sales_frames = sales_performance_frames(df_sales)
+        st.subheader("Sales performance")
+        sales_frames = sales_performance_frames(df_sales)
 
-    left, right = st.columns(2)
-    if not sales_frames["revenue_by_product"].empty:
-        left.plotly_chart(
-            px.bar(sales_frames["revenue_by_product"], x="product_name", y="total_sale", title="Revenue by Product"),
-            use_container_width=True,
-        )
-    if not sales_frames["profit_by_product"].empty:
-        right.plotly_chart(
-            px.bar(sales_frames["profit_by_product"], x="product_name", y="profit", title="Profit by Product"),
-            use_container_width=True,
-        )
+        left, right = st.columns(2)
+        if not sales_frames["revenue_by_product"].empty:
+            left.plotly_chart(
+                px.bar(sales_frames["revenue_by_product"], x="product_name", y="total_sale", title="Revenue by Product"),
+                use_container_width=True,
+            )
+        if not sales_frames["profit_by_product"].empty:
+            right.plotly_chart(
+                px.bar(sales_frames["profit_by_product"], x="product_name", y="profit", title="Profit by Product"),
+                use_container_width=True,
+            )
 
-    m1, m2 = st.columns(2)
-    m1.metric("Average Order Value", f"${sales_frames['aov']:,.2f}")
-    m2.metric("Order Count", sales_frames["order_count"])
+        m1, m2 = st.columns(2)
+        m1.metric("Average Order Value", f"${sales_frames['aov']:,.2f}")
+        m2.metric("Order Count", sales_frames["order_count"])
 
-    if not sales_frames["margin_distribution"].empty:
-        st.plotly_chart(
-            px.histogram(sales_frames["margin_distribution"], x="margin_pct", nbins=12, title="Margin Distribution by Product"),
-            use_container_width=True,
-        )
+        if not sales_frames["margin_distribution"].empty:
+            st.plotly_chart(
+                px.histogram(sales_frames["margin_distribution"], x="margin_pct", nbins=12, title="Margin Distribution by Product"),
+                use_container_width=True,
+            )
 
-    b1, b2 = st.columns(2)
-    b1.write("Top 10 SKUs by Profit")
-    b1.dataframe(sales_frames["top_profit"], use_container_width=True, hide_index=True)
-    b2.write("Bottom 10 SKUs by Profit")
-    b2.dataframe(sales_frames["bottom_profit"], use_container_width=True, hide_index=True)
+        b1, b2 = st.columns(2)
+        b1.write("Top 10 SKUs by Profit")
+        b1.dataframe(sales_frames["top_profit"], use_container_width=True, hide_index=True)
+        b2.write("Bottom 10 SKUs by Profit")
+        b2.dataframe(sales_frames["bottom_profit"], use_container_width=True, hide_index=True)
 
-    if not sales_frames["daily_orders"].empty:
-        st.plotly_chart(
-            px.line(
-                sales_frames["daily_orders"],
-                x="day",
-                y=["revenue", "order_count"],
-                title="Order Count and Revenue Trend",
-                markers=True,
-            ),
-            use_container_width=True,
-        )
+        if not sales_frames["daily_orders"].empty:
+            st.plotly_chart(
+                px.line(
+                    sales_frames["daily_orders"],
+                    x="day",
+                    y=["revenue", "order_count"],
+                    title="Order Count and Revenue Trend",
+                    markers=True,
+                ),
+                use_container_width=True,
+            )
+    else:
+        st.subheader("Operational KPI strip")
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Total SKUs", len(df_products))
+        c2.metric("Low-stock SKUs", int((df_products.get("quantity", 0) <= 5).sum()) if not df_products.empty else 0)
+        c3.metric("Out-of-stock SKUs", int((df_products.get("quantity", 0) <= 0).sum()) if not df_products.empty else 0)
+        c4.metric("Orders (records)", len(df_sales))
 
     st.markdown("---")
     st.subheader("Inventory health & risk")

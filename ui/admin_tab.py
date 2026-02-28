@@ -25,7 +25,7 @@ def _render_data_overview() -> None:
 
 
 def render_admin_tab() -> None:
-    st.caption("Only superadmin can view/manage this panel.")
+    st.caption("Only admin can view/manage this panel.")
     _render_data_overview()
 
     st.markdown("---")
@@ -53,9 +53,10 @@ def render_admin_tab() -> None:
             help="Comma-separated keys required for this client.",
         )
 
-        st.markdown("##### Initial client login credentials")
-        owner_username = st.text_input("Client Admin Username", value="owner")
-        owner_password = st.text_input("Client Admin Password", type="password")
+        st.markdown("##### Initial credentials")
+        user_username = st.text_input("Username", value="owner")
+        user_password = st.text_input("Password", type="password")
+        user_role = st.selectbox("Role", ["owner", "employee"], index=0)
         submitted = st.form_submit_button("Create Client")
 
     if submitted:
@@ -78,7 +79,12 @@ def render_admin_tab() -> None:
             st.error(message)
             return
 
-        user_ok, user_message = create_client_user(client_id=client_id, username=owner_username, password=owner_password)
+        user_ok, user_message = create_client_user(
+            client_id=client_id,
+            username=user_username,
+            password=user_password,
+            role=user_role,
+        )
         if not user_ok:
             st.warning(f"Client created but login user not created: {user_message}")
         else:

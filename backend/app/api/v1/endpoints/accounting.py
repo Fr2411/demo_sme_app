@@ -38,7 +38,7 @@ def create_journal_entry(payload: JournalEntryCreate, db: Session = Depends(get_
 
 
 @router.post('/journal-entries/{entry_id}/reverse', response_model=JournalEntryRead)
-def reverse_journal_entry(entry_id: int, db: Session = Depends(get_db), user=Depends(require_roles('admin', 'finance_manager'))):
+def reverse_journal_entry(entry_id: int, db: Session = Depends(get_db), user=Depends(require_roles('admin', 'owner'))):
     original = db.query(JournalEntry).filter(JournalEntry.id == entry_id).first()
     if not original:
         raise HTTPException(status_code=404, detail='Journal entry not found')

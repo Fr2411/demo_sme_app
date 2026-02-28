@@ -38,7 +38,7 @@ router = APIRouter(prefix='/finance', tags=['finance'])
 
 def _assert_finance_read_access(user=Depends(get_current_user)):
     role_names = {r.name for r in user.roles}
-    if not role_names.intersection({'admin', 'finance_manager', 'inventory_manager'}):
+    if not role_names.intersection({'admin', 'owner'}):
         raise HTTPException(status_code=403, detail='No financial read access')
     return user
 
@@ -47,7 +47,7 @@ def _assert_finance_read_access(user=Depends(get_current_user)):
 def create_expense(
     payload: ExpenseCreate,
     db: Session = Depends(get_db),
-    user=Depends(require_roles('admin', 'finance_manager')),
+    user=Depends(require_roles('admin', 'owner')),
 ):
     return record_expense(db, payload, user)
 
@@ -56,7 +56,7 @@ def create_expense(
 def create_income(
     payload: IncomeCreate,
     db: Session = Depends(get_db),
-    user=Depends(require_roles('admin', 'finance_manager')),
+    user=Depends(require_roles('admin', 'owner')),
 ):
     return record_income(db, payload, user)
 
@@ -65,7 +65,7 @@ def create_income(
 def create_employee_record(
     payload: EmployeeCreate,
     db: Session = Depends(get_db),
-    user=Depends(require_roles('admin', 'finance_manager')),
+    user=Depends(require_roles('admin', 'owner')),
 ):
     return create_employee(db, payload, user)
 
@@ -74,7 +74,7 @@ def create_employee_record(
 def create_payroll(
     payload: PayrollCreate,
     db: Session = Depends(get_db),
-    user=Depends(require_roles('admin', 'finance_manager')),
+    user=Depends(require_roles('admin', 'owner')),
 ):
     return process_payroll(db, payload, user)
 
@@ -84,7 +84,7 @@ def approve_payroll(
     payroll_id: int,
     payload: PayrollApprove,
     db: Session = Depends(get_db),
-    user=Depends(require_roles('admin', 'finance_manager')),
+    user=Depends(require_roles('admin', 'owner')),
 ):
     return approve_and_pay_payroll(db, payroll_id, payload.otp_code, user)
 
