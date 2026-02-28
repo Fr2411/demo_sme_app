@@ -343,3 +343,64 @@ The dashboard tab is now organized as a command-center layout while preserving t
 6. **Sidebar policy snapshot**: business profile, operating hours, discount cap, commission rate, and return policy.
 
 This implementation keeps the original data model intact (no schema migration required) and uses existing data sources in `DB/*.csv`, AI agents, and FastAPI endpoints.
+
+## 6) Financial Management & Client Dashboard Module
+
+### Double-entry design (strict accounting)
+- Every expense, income, payroll accrual, and payroll payment creates a **balanced journal entry** in `journal_entries` + `journal_lines`.
+- Financial business records (`expenses`, `income`, `payroll`, `cash_transactions`) always store `linked_journal_entry_id` to guarantee traceability.
+- Journal entries are immutable from API perspective (no delete endpoint); corrections use `POST /api/v1/accounting/journal-entries/{entry_id}/reverse`.
+
+### Chart of accounts (default auto-provision)
+- `1000` Cash (Asset)
+- `1010` Bank (Asset)
+- `1100` Accounts Receivable (Asset)
+- `2000` Accounts Payable (Liability)
+- `2100` Payroll Liability (Liability)
+- `3000` Owner Equity (Equity)
+- `3100` Retained Earnings (Equity)
+- `4000` Revenue (Revenue)
+- `5000` Cost of Goods Sold (Expense)
+- `6000` Operating Expenses (Expense)
+- `6100` Salary Expense (Expense)
+
+### Finance API
+- `POST /api/v1/finance/expenses`
+- `POST /api/v1/finance/income`
+- `POST /api/v1/finance/employees`
+- `POST /api/v1/finance/payroll`
+- `POST /api/v1/finance/payroll/{payroll_id}/approve` *(requires OTP payload `654321` in this implementation)*
+- `GET /api/v1/finance/reports/cashflow`
+- `GET /api/v1/finance/reports/pnl`
+- `GET /api/v1/finance/reports/balance-sheet`
+- `GET /api/v1/finance/dashboard`
+
+### Client dashboard API
+- `GET /api/v1/client/dashboard`
+- `GET /api/v1/client/orders`
+- `GET /api/v1/client/invoices`
+- `GET /api/v1/client/invoices/{invoice_id}/download` *(PDF stub)*
+- `GET /api/v1/client/statement`
+- `GET /api/v1/client/statement/download` *(PDF stub)*
+- `POST /api/v1/client/payment-confirmation`
+- `POST /api/v1/client/return-request`
+- `POST /api/v1/client/support-message`
+
+### RBAC matrix
+- `admin`: full finance + dashboard ops
+- `finance_manager`: full finance + payroll approval
+- `inventory_manager`: read-only finance reports/dashboard
+- `sales_agent`: denied finance endpoints
+- `client`: only `/api/v1/client/*` endpoints
+
+### Security and audit controls
+- Financial operations generate `audit_logs` records (action, entity, actor, timestamp).
+- Payroll approval enforces simple 2FA OTP validation.
+- `JournalEntry` includes `created_by`, `created_at`, and reversal linkage.
+
+### Scheduled task stubs
+Located in `backend/app/services/scheduled_finance_tasks.py`:
+- `monthly_payroll_generation`
+- `monthly_pnl_auto_snapshot`
+- `overdue_receivable_alert`
+- `low_cash_warning_alert`

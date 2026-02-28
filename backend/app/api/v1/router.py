@@ -3,6 +3,8 @@ from fastapi import APIRouter
 from backend.app.api.v1.endpoints.accounting import router as accounting_router
 from backend.app.api.v1.endpoints.auth import router as auth_router
 from backend.app.api.v1.endpoints.chat import router as chat_router
+from backend.app.api.v1.endpoints.client_dashboard import router as client_dashboard_router
+from backend.app.api.v1.endpoints.finance import router as finance_router
 from backend.app.api.v1.endpoints.inventory import router as inventory_router
 from backend.app.api.v1.endpoints.orders import router as orders_router
 from backend.app.api.v1.endpoints.products import router as products_router
@@ -17,6 +19,9 @@ api_router.include_router(inventory_router)
 api_router.include_router(orders_router)
 api_router.include_router(returns_router)
 api_router.include_router(accounting_router)
+api_router.include_router(finance_router)
 api_router.include_router(reports_router)
 api_router.include_router(chat_router)
 api_router.include_router(sessions_router)
+
+api_router.include_router(client_dashboard_router)

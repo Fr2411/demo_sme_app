@@ -1,7 +1,9 @@
 from backend.app.db.base_class import Base
 from backend.app.models.accounting import Account, JournalEntry, JournalLine
+from backend.app.models.client import Invoice, Payment, PaymentConfirmation, SupportMessage
 from backend.app.models.conversation import Conversation
 from backend.app.models.customer import Customer
+from backend.app.models.finance import AuditLog, CashTransaction, Employee, Expense, Income, Payroll
 from backend.app.models.order import Order, OrderItem
 from backend.app.models.product import Product
 from backend.app.models.product_image import ProductImage
@@ -24,6 +26,16 @@ __all__ = [
     'Account',
     'JournalEntry',
     'JournalLine',
+    'Expense',
+    'Income',
+    'Employee',
+    'Payroll',
+    'CashTransaction',
+    'AuditLog',
+    'Invoice',
+    'Payment',
+    'PaymentConfirmation',
+    'SupportMessage',
     'Conversation',
     'SessionLog',
     'ReturnOrder',
