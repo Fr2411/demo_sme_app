@@ -205,6 +205,7 @@ The Streamlit workflow now uses a shared multi-client CSV database under `DB/`:
 - Feature toggle enforcement is applied at runtime; users only see tabs that are currently enabled for their login.
 - **Add Product tab** now includes a **Recently Added Products Statement** table that shows full product details for the active client inventory.
 - **Sales Entry tab** now includes a **Sales Entry Statement** table that shows all recorded sales details (latest first).
+- In **Client Admin**, platform admin can now switch the same form between **Create new client** and **Modify existing client** modes to edit any existing `DB/clients.csv` field (all columns are surfaced in the form, including social/meta channel settings).
 
 ### Finance operations (Streamlit)
 - Finance tab now includes a **manual transaction form** so authorized users can add income/expense rows (salary, rent, utility, logistics, etc.) to a client ledger.

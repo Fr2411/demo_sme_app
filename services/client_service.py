@@ -232,3 +232,29 @@ def add_client(client_data: dict) -> tuple[bool, str]:
     clients = pd.concat([clients, pd.DataFrame([row], columns=CLIENT_COLUMNS)], ignore_index=True)
     clients.to_csv(CLIENTS_FILE, index=False)
     return True, "Client created successfully"
+
+
+def update_client(client_id: str, client_data: dict) -> tuple[bool, str]:
+    ensure_db_structure()
+    target_client_id = str(client_id).strip()
+    if not target_client_id:
+        return False, "Client ID is required"
+
+    clients = get_all_clients()
+    mask = clients["client_id"].astype(str) == target_client_id
+    if not mask.any():
+        return False, "Client ID not found"
+
+    client_name = str(client_data.get("client_name", "")).strip()
+    if not client_name:
+        return False, "Client Name is required"
+
+    row = {col: client_data.get(col, "") for col in CLIENT_COLUMNS}
+    row["client_id"] = target_client_id
+    row["client_name"] = client_name
+
+    for col, value in row.items():
+        clients.loc[mask, col] = value
+
+    clients.to_csv(CLIENTS_FILE, index=False)
+    return True, "Client updated successfully"
