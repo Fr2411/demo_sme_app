@@ -96,21 +96,27 @@ Default client employee login:
 
 
 
-### AWS App Runner deployment (Docker runtime)
+### AWS App Runner deployment (Python 3.11 runtime)
 
-The repo root now includes an `apprunner.yaml` manifest for AWS App Runner source deployments. It points App Runner to the root `Dockerfile` and exposes container port `80`.
+The repo root includes an `apprunner.yaml` manifest for AWS App Runner source deployments using the managed Python 3.11 runtime.
 
 ```yaml
 version: 1.0
-runtime: docker
+
+runtime: python311
+
 build:
-  dockerfile: Dockerfile
-  context: .
+  commands:
+    build:
+      - pip install --upgrade pip
+      - pip install -r requirements.txt
+
 run:
-  port: 80
+  command: uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+  port: 8000
 ```
 
-Use this manifest when creating/updating an App Runner service from the repository so build and runtime settings stay consistent across environments.
+This configuration installs project dependencies from the root `requirements.txt` and runs the FastAPI backend with Uvicorn on port `8000`.
 
 ### Optional API-backed dashboard integration
 
