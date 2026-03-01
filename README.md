@@ -95,6 +95,23 @@ Default client employee login:
 - Password: `employee123`
 
 
+
+### AWS App Runner deployment (Docker runtime)
+
+The repo root now includes an `apprunner.yaml` manifest for AWS App Runner source deployments. It points App Runner to the root `Dockerfile` and exposes container port `80`.
+
+```yaml
+version: 1.0
+runtime: docker
+build:
+  dockerfile: Dockerfile
+  context: .
+run:
+  port: 80
+```
+
+Use this manifest when creating/updating an App Runner service from the repository so build and runtime settings stay consistent across environments.
+
 ### Optional API-backed dashboard integration
 
 The Streamlit dashboard can enrich CSV analytics with live FastAPI signals when these env vars are set before running Streamlit:
