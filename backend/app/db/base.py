@@ -8,6 +8,7 @@ from backend.app.models.order import Order, OrderItem
 from backend.app.models.product import Product
 from backend.app.models.product_image import ProductImage
 from backend.app.models.return_order import ReturnItem, ReturnOrder
+from backend.app.models.sale import Sale
 from backend.app.models.session_log import SessionLog
 from backend.app.models.stock_movement import StockMovement
 from backend.app.models.user import Permission, Role, User
@@ -40,4 +41,5 @@ __all__ = [
     'SessionLog',
     'ReturnOrder',
     'ReturnItem',
+    'Sale',
 ]

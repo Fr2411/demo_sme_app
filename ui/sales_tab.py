@@ -1,63 +1,50 @@
+import pandas as pd
 import streamlit as st
 
-from services.analytics_service import sales_preview_metrics
-from services.inventory_service import load_products
-from services.sales_service import add_sale, load_sales
+from services.api_client import EasyEcomApiClient
 
 
-def render_sales_tab(client_id, include_finance: bool = True):
-    st.subheader("Sales Entry")
-    df_products = load_products(client_id)
-    df_instock = df_products[df_products["quantity"] > 0]
+api_client = EasyEcomApiClient()
 
-    if df_instock.empty:
-        st.warning("No stock available.")
+
+def render_sales_tab(client_id: str, include_finance: bool = True):
+    st.subheader('Sales Entry')
+
+    try:
+        products = api_client.get_products(client_id)
+    except Exception as exc:
+        st.error(f'Could not load products: {exc}')
         return
 
-    product_name = st.selectbox("Product", df_instock["product_name"])
-    product_row = df_instock[df_instock["product_name"] == product_name].iloc[0]
-    available_qty = int(product_row["quantity"])
-    unit_cost = float(product_row["unit_cost"])
+    if not products:
+        st.warning('No products available. Add products first.')
+        return
 
-    st.write(f"Available Stock: {available_qty}")
-    if include_finance:
-        st.write(f"Purchase Cost: ${unit_cost:.2f}")
+    product_options = {f"{p['name']} (#{p['id']})": p for p in products}
+    selected_label = st.selectbox('Product', list(product_options.keys()))
+    selected_product = product_options[selected_label]
 
-    quantity_sold = st.number_input("Quantity Sold", min_value=1, max_value=available_qty, step=1)
-    unit_price = st.number_input("Selling Price", min_value=0.0, step=0.01)
+    qty = st.number_input('Quantity Sold', min_value=1, step=1)
+    selling_price = st.number_input('Selling Price', min_value=0.0, step=0.01, value=float(selected_product['unit_price']))
 
-    if include_finance:
-        df_sales = load_sales(client_id)
-        profit_per_unit, total_profit_sale, avg_margin = sales_preview_metrics(
-            df_sales,
-            unit_cost,
-            unit_price,
-            quantity_sold,
-        )
-        st.write(f"Profit per Unit: ${profit_per_unit:.2f}")
-        st.write(f"Total Profit for this Sale: ${total_profit_sale:.2f}")
-        st.write(f"Average Margin Based on Previous Sales: {avg_margin}%")
-
-        if profit_per_unit < 0:
-            st.error("⚠ Selling below cost!")
-
-    submitted = st.button("Record Sale")
-    if submitted:
-        ok, message = add_sale(client_id, product_name, quantity_sold, unit_price)
-        if ok:
-            st.success(message)
+    if st.button('Record Sale'):
+        try:
+            api_client.create_sale(client_id, selected_product['id'], int(qty), float(selling_price))
+            st.success('Sale recorded successfully')
             st.rerun()
-        else:
-            st.error(message)
+        except Exception as exc:
+            st.error(f'Failed to record sale: {exc}')
 
-    st.markdown("---")
-    st.subheader("Sales Entry Statement")
-    latest_sales_df = load_sales(client_id)
-
-    if latest_sales_df.empty:
-        st.info("No sales entries found yet for this client.")
+    st.markdown('---')
+    st.subheader('Sales')
+    try:
+        sales = api_client.get_sales(client_id)
+    except Exception as exc:
+        st.error(f'Could not load sales: {exc}')
         return
 
-    latest_sales_df = latest_sales_df.sort_values(by=["date"], ascending=False).reset_index(drop=True)
-    latest_sales_df.index = latest_sales_df.index + 1
-    st.dataframe(latest_sales_df, use_container_width=True)
+    if not sales:
+        st.info('No sales entries found yet for this client.')
+        return
+
+    st.dataframe(pd.DataFrame(sales), use_container_width=True)
